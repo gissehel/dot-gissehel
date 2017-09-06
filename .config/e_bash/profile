@@ -1,0 +1,3 @@
+export E_BASH_DIR=~/.config/e_bash
+if [ -f "$E_BASH_DIR"/functions.sh ]; then . "$E_BASH_DIR"/functions.sh; fi
+if [ -f "$E_BASH_DIR"/envvars.sh ]; then . "$E_BASH_DIR"/envvars.sh; fi
