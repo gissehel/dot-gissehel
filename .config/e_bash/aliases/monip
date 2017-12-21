@@ -1,0 +1,1 @@
+alias monip="curl -s http://monip.org | perl -ape 's/<[^>]+>/ /mg; s/ +/ /mg'| grep \" IP \" --color=never | perl -ape 's{ IP : (\S+) (\S+) (.*)}{\$1\n\$2\n\$3}'"
