@@ -11,7 +11,7 @@ this_script_full_path="$(readlink -f "${this_script}")"
 workspacer_fail() {
     message="$1"
     echo "${message}"
-    exit 1
+    return 1
 }
 
 workspacer_find_tool_paths() {
@@ -55,13 +55,18 @@ workspacer_install_tool() {
 
 workspacer_ensure_repo_dir() {
     workspacer_find_repo_paths
-    [ -z "${repo_dir}" ] && workspacer_fail "No repository directory associated with the name [${reponame}]"
+    if [ -z "${repo_dir}" ]
+    then
+        workspacer_fail "No repository directory associated with the name [${reponame}]"
+        return 1
+    fi
+    return 0
 }
 
 workspacer_cd_work_element_dir() {
     local name="$1"
     local work_element_dir="${repo_dir}/${name}"
-    workspacer_ensure_repo_dir
+    workspacer_ensure_repo_dir || return 1
     [ -d "${work_element_dir}" ] && cd "${work_element_dir}"
     [ -d "${work_element_dir}" ] && echo "== ${work_element_dir} =="
 }
@@ -77,7 +82,7 @@ workspacer_create_work_element() {
     name="${now}-${mininame}"
     fullpath="${repo_dir}/${now}-${mininame}"
     mkdir -p "${fullpath}"
-    workspacer_cd_work_element_dir "${name}"
+    workspacer_cd_work_element_dir "${name}" || return 1
 }
 
 workspacer_cd_work_element() {
@@ -97,7 +102,7 @@ workspacer_cd_work_element() {
     else
         if [ $(echo "${list}" | wc -l) == "1" ]
         then
-            workspacer_cd_work_element_dir "${list}"
+            workspacer_cd_work_element_dir "${list}" || return 1
         else
             local count=0
             local last_element=''
@@ -108,7 +113,7 @@ workspacer_cd_work_element() {
             done
             echo -n "? "
             read element_count
-            workspacer_cd_work_element_dir "$(((echo "${list}"; (echo "${list}" | head -n ${element_count})) | tail -n 1) 2>/dev/null)"
+            workspacer_cd_work_element_dir "$(((echo "${list}"; (echo "${list}" | head -n ${element_count})) | tail -n 1) 2>/dev/null)" || return 1
 
         fi
     fi
@@ -178,33 +183,31 @@ shift
 if [ -z "${action}" ]
 then
     workspacer_get_help
-    exit 1
+else
+    case "${action}" in
+        cr|create)
+            workspacer_create_work_element "$@"
+            ;;
+        cd)
+            workspacer_cd_work_element "$@"
+            ;;
+        ar|archive)
+            workspacer_archive_work_element "$@"
+            ;;
+        name)
+            workspacer_name_work_dir "$@"
+            ;;
+        install)
+            workspacer_install_tool "$@"
+            ;;
+        list)
+            workspacer_list_tools "$@"
+            ;;
+        help)
+            workspacer_get_help "$@"
+            ;;
+        *)
+            echo "unknown [${action}]"
+            ;;
+    esac
 fi
-
-case "${action}" in
-    cr|create)
-        workspacer_create_work_element "$@"
-        ;;
-    cd) 
-        workspacer_cd_work_element "$@"
-        ;;
-    ar|archive)
-        workspacer_archive_work_element "$@"
-        ;;
-    name)
-        workspacer_name_work_dir "$@"
-        ;;
-    install)
-        workspacer_install_tool "$@"
-        ;;
-    list)
-        workspacer_list_tools "$@"
-        ;;
-    help)
-        workspacer_get_help "$@"
-        ;;
-    *)
-        echo "unknown [${action}]"
-        ;;
-esac
-
