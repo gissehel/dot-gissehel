@@ -1,0 +1,210 @@
+#!/usr/bin/env bash
+
+toolname="workspacer"
+reponame="${toolname}"
+repo_dir=""
+
+this_script="${BASH_SOURCE[0]}"
+this_script_basename="$(basename "${this_script}")"
+this_script_full_path="$(readlink -f "${this_script}")"
+
+workspacer_fail() {
+    message="$1"
+    echo "${message}"
+    exit 1
+}
+
+workspacer_find_tool_paths() {
+    toolname_config_dir=~/".config/${toolname}"
+    toolname_repo_dir="${toolname_config_dir}/repos"
+
+    mkdir -p "${toolname_repo_dir}"
+}
+
+workspacer_find_repo_paths() {
+    workspacer_find_tool_paths
+    config_name="${toolname_repo_dir}/${reponame}"
+
+    [ -h "${config_name}" ] && repo_dir="$(readlink "${config_name}")"
+    archive="${repo_dir}/0__ARCHIVE__"
+    if [ -n "${repo_dir}" ]
+    then
+        mkdir -p "${repo_dir}"
+        mkdir -p "${archive}"
+    fi
+}
+
+workspacer_install_tool() {
+    workspacer_find_tool_paths
+    script_filename="${toolname_config_dir}/aliases"
+    echo "alias workspacer='. ${this_script_full_path}'" > "${script_filename}"
+    /bin/ls -1 "${toolname_repo_dir}" | while read repo_name
+    do
+        if [ -h "${toolname_repo_dir}/${repo_name}" ]
+        then
+            repodir="$(readlink "${toolname_repo_dir}/${repo_name}")"
+            # echo " [${repo_name}] => [${repodir}]"
+            echo "alias ${repo_name}cd='. ${this_script_full_path} cd ${repo_name}'" >> "${script_filename}"
+            echo "alias ${repo_name}cr='. ${this_script_full_path} cr ${repo_name}'" >> "${script_filename}"
+            echo "alias ${repo_name}ar='. ${this_script_full_path} ar ${repo_name}'" >> "${script_filename}"
+        fi
+    done
+    source "${script_filename}"
+}
+
+
+workspacer_ensure_repo_dir() {
+    workspacer_find_repo_paths
+    [ -z "${repo_dir}" ] && workspacer_fail "No repository directory associated with the name [${reponame}]"
+}
+
+workspacer_cd_work_element_dir() {
+    local name="$1"
+    local work_element_dir="${repo_dir}/${name}"
+    workspacer_ensure_repo_dir
+    [ -d "${work_element_dir}" ] && cd "${work_element_dir}"
+    [ -d "${work_element_dir}" ] && echo "== ${work_element_dir} =="
+}
+
+workspacer_create_work_element() {
+    reponame="$1"
+    shift
+    name="$*"
+    workspacer_ensure_repo_dir
+    mkdir -p "${repo_dir}"
+    mininame="$(echo "$name" | iconv -f utf8 -t ascii//TRANSLIT | sed -e 's/[^a-zA-Z0-9\-]/_/g;s/_\+/_/g;s/^_//;s/_$//;')"
+    now=$(date "+%Y-%m-%d")
+    name="${now}-${mininame}"
+    fullpath="${repo_dir}/${now}-${mininame}"
+    mkdir -p "${fullpath}"
+    workspacer_cd_work_element_dir "${name}"
+}
+
+workspacer_cd_work_element() {
+    reponame="$1"
+    shift
+    params="$@"
+    workspacer_ensure_repo_dir
+    local list=$(cd "${repo_dir}"; /bin/ls -1d */)
+    for param in ${params}
+    do
+        # echo "param [${param}]"
+        local list="$(echo "${list}" | grep -i "${param}")"
+    done
+    if [ -z "${list}" ]
+    then
+        echo "no folder found"
+    else
+        if [ $(echo "${list}" | wc -l) == "1" ]
+        then
+            workspacer_cd_work_element_dir "${list}"
+        else
+            local count=0
+            local last_element=''
+            echo "${list}" | while read element
+            do
+                let count+=1
+                echo "${count} ${element}"
+            done
+            echo -n "? "
+            read element_count
+            workspacer_cd_work_element_dir "$(((echo "${list}"; (echo "${list}" | head -n ${element_count})) | tail -n 1) 2>/dev/null)"
+
+        fi
+    fi
+}
+
+workspacer_archive_work_element() {
+    reponame="$1"
+    shift
+    workspacer_ensure_repo_dir
+    if [ $(realpath ..) == $(realpath "${repo_dir}") ]
+    then
+        mv "$(realpath .)" "$(realpath "${archive}")"
+        cd ..
+    else
+        echo "archive should be ran inside a work element"
+    fi 
+}
+
+workspacer_name_work_dir() {
+    reponame="$1"
+    shift
+    workspacer_find_repo_paths
+    local location="$1"
+    local location_full_path="$(readlink -f "${location}")"
+    [ -h "${config_name}" ] && rm -f "${config_name}"
+    ln -s "${location_full_path}" "${config_name}"
+    echo "Name [${reponame}] associated to location [${location_full_path}]"
+    workspacer_install_tool
+    workspacer_find_repo_paths
+}
+
+workspacer_list_tools() {
+    workspacer_find_tool_paths
+    /bin/ls -1 "${toolname_repo_dir}" | while read repo_name
+    do
+        if [ -h "${toolname_repo_dir}/${repo_name}" ]
+        then
+            repodir="$(readlink "${toolname_repo_dir}/${repo_name}")"
+            echo "  [${repo_name}] => [${repodir}]"
+            echo "      ${repo_name}cr : Create a new work element directory"
+            echo "      ${repo_name}cd : Change directory to a work element directory"
+            echo "      ${repo_name}ar : Archive the current directory if a work element directory"
+        fi
+    done
+}
+
+workspacer_get_help() {
+    echo "Usage: ${this_script_basename} ACTION [REPONAME] [...]"
+    echo "Perform an action on a workspacer repository." 
+    echo "Create, use and archive timestamped work elements."
+    echo ""
+    echo "Actions:"
+    echo "    cr, create     Create a new work element directory"
+    echo "    cd             Change to the work element directory"
+    echo "    ar, archive    Archive the current directory (should be in a work element directory)"
+    echo ""
+    echo "    name           Associate a name to a new repository directory"
+    echo "    install        Install the tool and create the aliases file"
+    echo "    list           List all the available repository and associated aliases"
+    echo "    help           Get this help"
+
+}
+
+action="$1"
+shift
+
+if [ -z "${action}" ]
+then
+    workspacer_get_help
+    exit 1
+fi
+
+case "${action}" in
+    cr|create)
+        workspacer_create_work_element "$@"
+        ;;
+    cd) 
+        workspacer_cd_work_element "$@"
+        ;;
+    ar|archive)
+        workspacer_archive_work_element "$@"
+        ;;
+    name)
+        workspacer_name_work_dir "$@"
+        ;;
+    install)
+        workspacer_install_tool "$@"
+        ;;
+    list)
+        workspacer_list_tools "$@"
+        ;;
+    help)
+        workspacer_get_help "$@"
+        ;;
+    *)
+        echo "unknown [${action}]"
+        ;;
+esac
+
