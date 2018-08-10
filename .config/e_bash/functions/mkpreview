@@ -1,0 +1,4 @@
+function mkpreview {
+    INFILE="$1"
+    ffmpeg -i "${INFILE}" -vf scale=200:-2 -c:v libx264 -preset ultrafast -crf 25 -an "${INFILE}.preview-200-25.mp4"
+}
