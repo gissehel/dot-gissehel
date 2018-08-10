@@ -1,0 +1,1 @@
+alias playaa='mplayer -vo aa -quiet -contrast 25 -monitorpixelaspect 0.5 -nosub -noautosub -framedrop'
