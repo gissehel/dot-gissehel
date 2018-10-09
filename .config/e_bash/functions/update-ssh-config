@@ -6,6 +6,7 @@ function update-ssh-config {
     fi
     echo "${mark}" > ~/.ssh/config
     cat ~/.ssh/config.d/*.config >> ~/.ssh/config
+    chmod 600 ~/.ssh/config
 }
 update-ssh-config
 
