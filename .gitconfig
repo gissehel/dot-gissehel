@@ -38,6 +38,5 @@
 [url "https://github.com/"]
     insteadOf = gh:
 
-
-
-
+[core]
+	autocrlf = false
