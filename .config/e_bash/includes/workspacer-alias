@@ -1,0 +1,2 @@
+[ -f ~/.config/workspacer/aliases ] && . ~/.config/workspacer/aliases
+
