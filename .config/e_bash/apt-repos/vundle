@@ -1,0 +1,11 @@
+function install-vundle {
+    git clone https://github.com/VundleVim/Vundle.vim.git ~/.dotfiles/vundle/.vim/bundle/Vundle.vim
+    dot update
+    vim +PluginInstall +qall
+}
+
+if [ ! -d ~/.dotfiles/vundle/.vim/bundle/Vundle.vim ]
+then
+    install-vundle
+fi
+
