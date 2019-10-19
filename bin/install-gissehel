@@ -9,7 +9,7 @@ then
     curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 fi
 
-sudo apt update && sudo apt install -y yarn nodejs gcc g++ make
+sudo apt update && sudo apt install -y yarn nodejs gcc g++ make ffmpeg
 
 #docker compose
 
