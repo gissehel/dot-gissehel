@@ -49,7 +49,3 @@
 
 [core]
     autocrlf = false
-
-[include]
-    path = .config/gitconfig/include.gitconfig
-
