@@ -10,6 +10,7 @@
     st = status
     cp = cherry-pick
     co = checkout
+    com = commit
 
     lol = log --graph --decorate --pretty=oneline --abbrev-commit
     lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
@@ -48,3 +49,7 @@
 
 [core]
     autocrlf = false
+
+[include]
+    path = .config/gitconfig/include.gitconfig
+

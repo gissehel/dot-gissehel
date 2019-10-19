@@ -1,0 +1,10 @@
+function create-git-config-include {
+    if [ ! -f ~/.dotfiles/local/.config/gitconfig/gitconfig.d/.localempty ]
+    then
+        mkdir -p ~/.dotfiles/local/.config/gitconfig/gitconfig.d
+        touch ~/.dotfiles/local/.config/gitconfig/gitconfig.d/.localempty
+    fi
+    ~/.dotfiles/bin/dot update --skip-pull  
+    ~/.config/gitconfig/create-include.sh
+}
+create-git-config-include
