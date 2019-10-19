@@ -1,0 +1,182 @@
+#!/usr/bin/env bash
+
+scriptname=$(basename ${0})
+
+AUTOFETCH_DIR=~/dev/autofetch
+AUTOFETCH_CONF=~/.config/autofetch.rc
+
+[ -f ${AUTOFETCH_CONF} ] && . "${AUTOFETCH_CONF}"
+
+command="fetch"
+verbose="1"
+add_as=""
+
+git_status() {
+    if [ -n "$(git status --porcelain)" ]
+    then
+        git -c color.status=always status
+    fi
+}
+
+indent_lines() {
+    while read line
+    do 
+        [ "${verbose}" == "1" ] && echo "    ${line}"
+    done
+}
+
+indent_error_lines() {
+    while read line
+    do 
+        echo "    !! [${line}]"
+    done
+}
+
+while [ ${#} -gt 0 ]
+do
+    case "${1}" in
+        --pull)
+            command="pull"
+        ;;
+        --pull-autostash|-P)
+            command="pull-autostash"
+        ;;
+        --remote-list|-l)
+            command="remote-list"
+        ;;
+        --fetch)
+            command="fetch"
+        ;;
+        --add)
+            command="add"
+        ;;
+        --add-as)
+            command="add"
+            add_as="${2}"
+            shift
+        ;;
+        --status|--st|-s)
+            command="status"
+        ;;
+        --verbose|-v)
+            verbose="1"
+        ;;
+        --quiet|-q)
+            verbose="0"
+        ;;
+        --help|-h)
+            command="help"
+        ;;
+        *)
+            echo "Don't understand [${1}]"
+            is_failed="1"
+        ;;
+    esac
+    shift
+done
+
+bash_command=""
+command_name=""
+
+case "${command}" in
+    fetch)
+        bash_command="git fetch --all"
+        command_name="Fetching in"
+    ;;
+    remote-list)
+        bash_command="git remote -v"
+        command_name="Listing"
+    ;;
+    pull)
+        bash_command="git pull"
+        command_name="Pulling"
+    ;;
+    pull-autostash)
+        bash_command="git pull --autostash"
+        command_name="Pulling (with autostash)"
+    ;;
+    add)
+        bash_command=""
+    ;;
+    status)
+        bash_command="git_status"
+        command_name="Getting status from"
+    ;;
+    help)
+        bash_command=""
+    ;;
+    *)
+        echo "Don't understand command [${command}]"
+        is_failed="1"
+    ;;
+esac
+
+if [ ${command} == "help" ] || [ "${is_failed}" == "1" ]
+then
+    echo "Usage: ${scriptname} [OPTION]..."
+    echo ""
+    echo "Fetch data from all repositories linked from ${AUTOFETCH_DIR}"
+    echo ""
+    echo "Options:"
+    echo "    --help, -h           Print this help"
+    echo "    --quiet, -q          Don't display anything"
+    echo "    --verbose, -v        Display information about commands run (default, opposite of --quiet)"
+    echo "    --fetch              Do a fetch on all git repo (default)"
+    echo "    --pull               Do a pull on all git repo"
+    echo "    --pull-autostash, -P Do a pull with autostash on all git repo"
+    echo "    --remote-list, -l    List all remote repositories for all git repo"
+    echo "    --status, --st, -s   Get the status of all git repo"
+    echo "    --add                Add the current working dir's repo to the repo list"
+    echo "    --add-as NAME        Add the current working dir's repo to the repo list as name NAME"
+else
+    mkdir -p "${AUTOFETCH_DIR}"
+    
+    if [ "${command}" == "add" ]
+    then
+        current_git_repo="$(git rev-parse --git-dir 2>/dev/null)"
+        if [ -z "${current_git_repo}" ]
+        then
+            echo "Error : [$(pwd)] isn't in a git repo. Can't add that directory"
+        else
+            current_git_repo="$(readlink -f "${current_git_repo}/..")"
+            if [ -z "${add_as}" ]
+            then
+                add_as="$(basename "${current_git_repo}")"
+            fi
+            if [ -z "${add_as}" ] || [ -f "${AUTOFETCH_DIR}/${add_as}" ] || [ -d "${AUTOFETCH_DIR}/${add_as}" ]
+            then
+                echo "Error : [${AUTOFETCH_DIR}/${add_as}] already exists"
+            else
+                [ "${verbose}" == "1" ] && echo "Adding [${current_git_repo}] as [${add_as}] ? ([y]/n)"
+                [ "${verbose}" == "1" ] && read result
+                if [ "${result}" == "" ] || [ "${result}" == "y" ] || [ "${result}" == "Y" ] || [ "${verbose}" != "1" ]
+                then
+                    ln -s "${current_git_repo}" "${AUTOFETCH_DIR}/${add_as}"
+                    [ "${verbose}" == "1" ] && echo "Git repo [${current_git_repo}] added under name [${add_as}]"
+                else
+                    echo "Aborting..."
+                fi
+            fi
+        fi
+    else
+        for reponame in $(/bin/ls -1 "${AUTOFETCH_DIR}")
+        do
+            fullreponame="${AUTOFETCH_DIR}/${reponame}"
+            if [ -n "${reponame}" ] && [ -d "${fullreponame}" ]
+            then
+                finalreponame=$(readlink -f "${fullreponame}")
+                pushd . >/dev/null
+                cd "${fullreponame}"
+                if [ -n "${bash_command}" ]
+                then
+                    # [ "${verbose}" == "1" ] && echo "----------"
+                    [ "${verbose}" == "1" ] && echo "${command_name} ${reponame} (${finalreponame})"
+                    (${bash_command} | indent_lines)
+                else
+                    echo "Don't know what to do for [${command}] in ${reponame} (${finalreponame})"
+                fi
+                popd >/dev/null
+            fi
+        done
+    fi
+fi
