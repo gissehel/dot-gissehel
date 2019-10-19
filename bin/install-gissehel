@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# Install node
+
+if [ ! -f /etc/apt/sources.list.d/yarn.list ]
+then
+    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+    curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+fi
+
+sudo apt update && sudo apt install -y yarn nodejs gcc g++ make
+
+#docker compose
+
+if [ ! -f /usr/local/bin/docker-compose ]
+then
+    sudo mkdir -p /usr/local/bin/
+    sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+fi
+
