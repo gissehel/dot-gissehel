@@ -10,7 +10,8 @@
     st = status
     cp = cherry-pick
     co = checkout
-    com = commit
+    com = commit -m
+    br = checkout -b
 
     lol = log --graph --decorate --pretty=oneline --abbrev-commit
     lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
