@@ -10,6 +10,7 @@ Plugin 'digitaltoad/vim-jade'
 Plugin 'digitaltoad/vim-pug'
 Plugin 'vitalk/vim-lesscss'
 Plugin 'wavded/vim-stylus'
+Plugin 'leafgarland/typescript-vim'
 
 call vundle#end()            " required
 filetype plugin indent on    " required
