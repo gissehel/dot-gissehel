@@ -1,3 +1,4 @@
 yarn nodejs gcc g++ make ffmpeg
 vim
 apt-transport-https ca-certificates curl gdebi-core git git-doc gnupg-agent mc mcrypt net-tools openssh-server openresolv openvpn seafile-cli vim sqlite3 p7zip-full software-properties-common tmux tmuxinator unzip zip
+mplayer
