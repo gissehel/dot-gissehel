@@ -2,8 +2,8 @@
 
 scriptname=$(basename ${0})
 
-AUTOFETCH_DIR=~/dev/autofetch
-AUTOFETCH_CONF=~/.config/autofetch.rc
+AUTOFETCH_DIR=~/.config/autofetch/repos
+AUTOFETCH_CONF=~/.config/autofetch/rc
 
 [ -f ${AUTOFETCH_CONF} ] && . "${AUTOFETCH_CONF}"
 
