@@ -1,0 +1,1 @@
+alias dimk='docker-images | grep -C 100 -E "[^ ]+-bkpt-[^ ]+" --color=always | less -R'

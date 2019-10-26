@@ -1,0 +1,1 @@
+alias tclock='tty-clock -sf "%Y-%m-%d %H:%M:%S  %z - W%V q%j - %s"'
