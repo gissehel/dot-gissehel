@@ -1,1 +1,0 @@
-alias dip='sudo docker inspect -f "{{ .NetworkSettings.IPAddress }}" '
