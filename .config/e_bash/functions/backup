@@ -1,0 +1,8 @@
+function backup {
+    SRC="$1"
+    DEST="$2"
+    SRC="${SRC%/}"
+    DEST="${DEST%/}"
+    [ -z "${DEST}" ] && DEST="${SRC}-backup"
+    [ -d "${SRC}" ] && [ ! -d "${DEST}" ] && mkdir -p "${DEST}" && (cd "${SRC}" && sudo tar cf - .) | (cd "${DEST}" && sudo tar xBf -)
+}
