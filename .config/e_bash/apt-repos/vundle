@@ -6,6 +6,7 @@ function install-vundle {
 
 if [ ! -d ~/.dotfiles/vundle/.vim/bundle/Vundle.vim ]
 then
+    ensure-packages-installed vim
     install-vundle
 fi
 
