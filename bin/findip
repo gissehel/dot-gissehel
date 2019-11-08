@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+IP="$1"
+
+curl 'https://whoer.net/checkwhois' -H 'origin: https://whoer.net' -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36' -H 'content-type: application/x-www-form-urlencoded; charset=UTF-8' -H 'accept: */*' -H 'referer: https://whoer.net/checkwhois' -H 'authority: whoer.net' -H 'x-requested-with: XMLHttpRequest' --data "partial=1&host=${IP}" --compressed 2>/dev/null | perl -ape 's{<[^>]+>}{}g' | grep -v "^$" | perl -ape 's{:[\s\r\n\t]+}{:}gm;' | less
+
