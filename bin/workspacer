@@ -123,7 +123,7 @@ workspacer_archive_work_element() {
     reponame="$1"
     shift
     workspacer_ensure_repo_dir
-    if [ $(realpath ..) == $(realpath "${repo_dir}") ]
+    if [ "$(realpath ..)" == "$(realpath "${repo_dir}")" ]
     then
         mv "$(realpath .)" "$(realpath "${archive}")"
         cd ..
