@@ -46,6 +46,12 @@
 [url "https://github.com/"]
     insteadOf = gh:
 
+[url "https://github.com/gissehel/"]
+    insteadOf = ghg:
+
+[url "https://github.com/webgiss/"]
+    insteadOf = ghwg:
+
 [credential]
     helper = store
 
