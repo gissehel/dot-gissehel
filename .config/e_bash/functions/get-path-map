@@ -1,0 +1,18 @@
+function get-path-map {
+    INPUT="$1"
+    OUTPUT="$2"
+    [ -z "${INPUT}" ] && INPUT="."
+    input_path="$(readlink -f "${INPUT}")"
+    if [ -z "${OUTPUT}" ]
+    then
+        output_path="/tmp"
+        output_file="$(echo "${input_path}" | sed -e 's/\//-/g; s/^-/dudumper-/')"
+    else
+        output_path="$(dirname "$(readlink -f "${OUTPUT}")")"
+        output_file="$(basename "${OUTPUT}")"
+    fi
+    user="$(id -u):$(id -g)"
+    echo docker run -ti --user "${user}" -v "${input_path}:/data:ro" -v "${output_path}:/tmp:rw" gissehel/dudumper --dir /data --out /tmp/"${output_file}" --html --display-dir "${input_path}"
+         docker run -ti --user "${user}" -v "${input_path}:/data:ro" -v "${output_path}:/tmp:rw" gissehel/dudumper --dir /data --out /tmp/"${output_file}" --html --display-dir "${input_path}"
+}
+
