@@ -23,6 +23,7 @@
     luagc = !git lua $(git reflog --pretty=format:%h)
 
     balias = "!git symbolic-ref refs/heads/$2 refs/heads/$1 #"
+    pushf = push --force-with-lease
 
 [color]
     ui = always
