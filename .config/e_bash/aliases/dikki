@@ -1,1 +1,1 @@
-alias dikki='docker run -it --rm -v /run/docker.sock:/var/run/docker.sock ghcr.io/gissehel/dikki'
+alias dikki='sudo docker run -it --rm -v /run/docker.sock:/var/run/docker.sock ghcr.io/gissehel/dikki'
