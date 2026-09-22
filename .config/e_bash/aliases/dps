@@ -1,0 +1,1 @@
+alias dps='docker ps -a | less -XRS'

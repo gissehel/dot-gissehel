@@ -1,0 +1,1 @@
+alias docker-list-mounted-path='docker inspect $(docker ps -q) | jq ".[].Mounts[].Source" | sort -u | less'
