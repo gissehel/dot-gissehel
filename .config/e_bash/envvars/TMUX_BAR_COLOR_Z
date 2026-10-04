@@ -1,0 +1,1 @@
+export TMUX_BAR_COLOR="${TMUX_BAR_COLOR_LOCAL:-green}"
