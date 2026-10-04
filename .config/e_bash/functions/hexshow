@@ -1,0 +1,3 @@
+function hexshow {
+    echo -n ${@} | hexdump -C
+}
